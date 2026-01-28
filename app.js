@@ -1,260 +1,479 @@
-// Глобальные переменные
-let currentScreen = 'main';
-const tg = window.Telegram.WebApp;
+// ====================
+// ОСНОВНАЯ КОНФИГУРАЦИЯ
+// ====================
 
-// Инициализация приложения
+// Telegram WebApp
+const tg = window.Telegram?.WebApp;
+let currentUser = null;
+let currentScreen = 'main';
+
+// ====================
+// ПРОВЕРКА ЗАПУСКА В TELEGRAM
+// ====================
+
+function checkTelegramEnvironment() {
+    console.log('🔍 Проверка окружения Telegram...');
+    
+    if (!window.Telegram || !tg) {
+        console.error('❌ Telegram WebApp SDK не загружен!');
+        showFallbackScreen('Telegram WebApp SDK не загружен. Откройте в Telegram.');
+        return false;
+    }
+    
+    // Расширяем на весь экран
+    tg.expand();
+    tg.enableClosingConfirmation();
+    
+    // Проверяем данные пользователя
+    const initData = tg.initDataUnsafe;
+    console.log('📱 Данные от Telegram:', initData);
+    
+    if (!initData?.user) {
+        console.error('❌ Данные пользователя не получены!');
+        console.log('Возможные причины:');
+        console.log('1. Открыто в браузере, а не в Telegram');
+        console.log('2. Menu Button не настроен в @BotFather');
+        console.log('3. Проблемы с авторизацией');
+        
+        showFallbackScreen('Запустите через Telegram бота. Нажмите Menu Button внизу экрана.');
+        return false;
+    }
+    
+    console.log('✅ Telegram данные получены:', initData.user);
+    return true;
+}
+
+// ====================
+// ЗАГРУЗОЧНЫЙ ЭКРАН (FALLBACK)
+// ====================
+
+function showFallbackScreen(message) {
+    document.body.innerHTML = `
+        <div class="fallback-container">
+            <div class="fallback-card glass">
+                <div class="fallback-icon">⚠️</div>
+                <h2>Неправильный запуск</h2>
+                <p>${message}</p>
+                <div class="fallback-steps">
+                    <h3>Правильный способ:</h3>
+                    <ol>
+                        <li>Откройте Telegram</li>
+                        <li>Найдите бота <strong>@ваш_бот</strong></li>
+                        <li>Нажмите кнопку <strong>Menu Button</strong> внизу</li>
+                        <li>Или отправьте команду <code>/start</code></li>
+                    </ol>
+                </div>
+                <button class="btn btn-primary" onclick="window.location.href='https://t.me/ваш_бот'">
+                    📲 Перейти в бота
+                </button>
+                <div class="debug-info">
+                    <p><strong>Текущий URL:</strong> ${window.location.href}</p>
+                    <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем стили для fallback
+    const style = document.createElement('style');
+    style.textContent = `
+        .fallback-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fallback-card {
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+        }
+        .fallback-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .fallback-steps {
+            text-align: left;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .fallback-steps ol {
+            padding-left: 20px;
+        }
+        .fallback-steps li {
+            margin: 8px 0;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 12px;
+            text-align: left;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ====================
+// ОСНОВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ
+// ====================
+
 async function initApp() {
+    console.log('🚀 Инициализация приложения...');
+    
+    // Проверяем запуск в Telegram
+    if (!checkTelegramEnvironment()) {
+        return;
+    }
+    
     try {
-        // Инициализируем Telegram Web App
-        tg.expand();
-        tg.setHeaderColor('#1a1a2e');
-        tg.setBackgroundColor('#0f0f23');
+        // 1. Инициализируем пользователя
+        console.log('👤 Инициализация пользователя в Supabase...');
+        currentUser = await initTelegramUser();
         
-        // Показываем кнопку "Закрыть"
-        tg.MainButton.setText('Закрыть');
-        tg.MainButton.onClick(tg.close);
-        tg.MainButton.show();
-        
-        // Инициализируем пользователя через Supabase
-        const user = await initTelegramUser();
-        
-        // Обновляем интерфейс
-        updateUserInfo(user);
-        updateBalance();
-        
-        // Проверяем, админ ли это
-        if (user.telegram_id === 6429524318) { // Замени на свой ID
-            document.getElementById('adminBtn').style.display = 'flex';
+        if (!currentUser) {
+            throw new Error('Не удалось инициализировать пользователя');
         }
         
+        console.log('✅ Пользователь получен:', currentUser);
+        
+        // 2. Обновляем UI
+        updateUserInfo(currentUser);
+        updateBalance();
+        
+        // 3. Настраиваем кнопки Telegram
+        setupTelegramButtons();
+        
+        // 4. Проверяем админа
+        checkAdminStatus();
+        
+        // 5. Показываем приветствие
+        setTimeout(() => {
+            showNotification(`Добро пожаловать, ${currentUser.first_name || 'игрок'}! 🎮`, 'success');
+        }, 500);
+        
+        console.log('🎉 Приложение успешно запущено!');
+        
     } catch (error) {
-        console.error('Ошибка инициализации:', error);
-        showNotification('Ошибка загрузки приложения', 'error');
+        console.error('💥 Ошибка инициализации:', error);
+        
+        // Показываем ошибку пользователю
+        document.body.innerHTML = `
+            <div class="error-container">
+                <div class="error-card glass">
+                    <h2>❌ Ошибка загрузки</h2>
+                    <p>${error.message}</p>
+                    <p style="margin-top: 20px;">Попробуйте:</p>
+                    <ul>
+                        <li>Перезапустить приложение</li>
+                        <li>Очистить кэш Telegram</li>
+                        <li>Подождать несколько минут</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        🔄 Перезагрузить
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Добавляем стили для ошибки
+        const style = document.createElement('style');
+        style.textContent = `
+            .error-container {
+                min-height: 100vh;
+                background: #1a1a2e;
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .error-card {
+                max-width: 500px;
+                width: 100%;
+                padding: 30px;
+                text-align: center;
+            }
+        `;
+        document.head.appendChild(style);
     }
 }
 
-// Обновление информации о пользователе
+// ====================
+// РАБОТА С ПОЛЬЗОВАТЕЛЕМ
+// ====================
+
 function updateUserInfo(user) {
-    document.getElementById('userName').textContent = 
-        user.first_name || user.username || 'Пользователь';
-    
+    const userName = user.first_name || user.username || 'Игрок';
+    document.getElementById('userName').textContent = userName;
     document.getElementById('userId').textContent = `ID: ${user.telegram_id}`;
     
-    // Аватарка из инициалов
+    // Устанавливаем аватар (первая буква имени)
     const avatar = document.getElementById('userAvatar');
     if (user.first_name) {
         avatar.textContent = user.first_name.charAt(0).toUpperCase();
     }
 }
 
-// Обновление баланса
 async function updateBalance() {
-    const user = window.supabaseClient.getCurrentUser();
-    if (user) {
-        document.getElementById('balanceAmount').textContent = user.balance;
+    if (!currentUser) return;
+    
+    try {
+        // Обновляем данные из базы
+        const user = await getCurrentUserFromDB();
+        if (user) {
+            currentUser = user;
+            document.getElementById('balanceAmount').textContent = user.balance;
+        }
+    } catch (error) {
+        console.error('Ошибка обновления баланса:', error);
+        // Используем кэшированное значение
+        if (currentUser.balance) {
+            document.getElementById('balanceAmount').textContent = currentUser.balance;
+        }
     }
 }
 
-// Переключение экранов
+// ====================
+// НАСТРОЙКА КНОПОК TELEGRAM
+// ====================
+
+function setupTelegramButtons() {
+    if (!tg) return;
+    
+    // Основная кнопка "Закрыть"
+    tg.MainButton.setText("✖️ Закрыть");
+    tg.MainButton.onClick(() => {
+        tg.close();
+    });
+    tg.MainButton.show();
+    
+    // Кнопка "Назад" для Mini Apps
+    if (tg.BackButton) {
+        tg.BackButton.onClick(() => {
+            if (currentScreen !== 'main') {
+                showScreen('main');
+            }
+        });
+    }
+}
+
+// ====================
+// ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
+// ====================
+
 function showScreen(screenName) {
+    console.log(`🔄 Переключаемся на экран: ${screenName}`);
+    
     // Скрываем все экраны
-    const screens = document.querySelectorAll('.games-screen, #mainScreen');
-    screens.forEach(screen => {
+    document.querySelectorAll('.screen').forEach(screen => {
         screen.style.display = 'none';
     });
     
     // Показываем нужный экран
-    currentScreen = screenName;
-    
-    if (screenName === 'main') {
-        document.getElementById('mainScreen').style.display = 'block';
-        updateBalance();
-    } else {
-        const screenElement = document.getElementById(screenName + 'Screen');
-        if (screenElement) {
-            screenElement.style.display = 'block';
-            screenElement.style.animation = 'fadeIn 0.3s ease';
+    const targetScreen = document.getElementById(`${screenName}Screen`);
+    if (targetScreen) {
+        targetScreen.style.display = 'block';
+        currentScreen = screenName;
+        
+        // Настраиваем кнопку "Назад"
+        if (tg?.BackButton) {
+            if (screenName === 'main') {
+                tg.BackButton.hide();
+            } else {
+                tg.BackButton.show();
+            }
         }
         
-        // Загружаем историю если открыли этот экран
-        if (screenName === 'history') {
-            loadGameHistory();
-        }
+        // Загружаем данные для экрана
+        loadScreenData(screenName);
     }
 }
 
-// Перевод средств
-async function makeTransfer() {
-    const friendId = document.getElementById('friendId').value;
-    const amount = parseInt(document.getElementById('transferAmount').value);
-    const comment = document.getElementById('transferComment').value;
+function loadScreenData(screenName) {
+    switch(screenName) {
+        case 'history':
+            loadGameHistory();
+            break;
+        case 'admin':
+            loadAdminPanel();
+            break;
+        // Для других экранов можно добавить загрузку данных
+    }
+}
+
+// ====================
+// АДМИН-ПАНЕЛЬ
+// ====================
+
+function checkAdminStatus() {
+    if (!currentUser) return;
     
-    if (!friendId || !amount) {
-        showNotification('Заполните все поля', 'error');
+    const adminIds = [123456789]; // Твой Telegram ID
+    const adminBtn = document.getElementById('adminBtn');
+    
+    if (adminIds.includes(currentUser.telegram_id)) {
+        adminBtn.style.display = 'flex';
+        console.log('👑 Пользователь является админом');
+    }
+}
+
+async function loadAdminPanel() {
+    // Здесь будет загрузка данных для админ-панели
+    console.log('Загрузка админ-панели...');
+}
+
+// ====================
+// УВЕДОМЛЕНИЯ
+// ====================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="notification-icon">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+            </div>
+            <div class="notification-text">${message}</div>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Анимация появления
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Автоматическое скрытие
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 3000);
+}
+
+// ====================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ====================
+
+async function getCurrentUserFromDB() {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('telegram_id', currentUser.telegram_id)
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Ошибка получения пользователя:', error);
+        return null;
+    }
+}
+
+// ====================
+// ПЕРЕВОД СРЕДСТВ
+// ====================
+
+async function makeTransfer() {
+    const friendId = document.getElementById('friendId')?.value;
+    const amount = parseInt(document.getElementById('transferAmount')?.value || '0');
+    const comment = document.getElementById('transferComment')?.value || '';
+    
+    if (!friendId || !amount || amount <= 0) {
+        showNotification('Заполните все поля корректно', 'error');
         return;
     }
     
-    if (amount <= 0) {
-        showNotification('Введите корректную сумму', 'error');
+    if (amount > currentUser.balance) {
+        showNotification('Недостаточно средств', 'error');
         return;
     }
     
     try {
-        const result = await window.supabaseClient.transferCoins(
-            parseInt(friendId),
-            amount,
-            comment
-        );
+        const result = await transferCoins(parseInt(friendId), amount, comment);
         
-        showNotification(`✅ Успешно переведено ${amount} монет!`, 'success');
-        
-        // Очищаем форму
-        document.getElementById('friendId').value = '';
-        document.getElementById('transferAmount').value = '100';
-        document.getElementById('transferComment').value = '';
-        
-        // Обновляем баланс
-        updateBalance();
-        
-        // Возвращаемся на главный экран
-        setTimeout(() => showScreen('main'), 1500);
-        
+        if (result.success) {
+            showNotification(`✅ Переведено ${amount} монет!`, 'success');
+            await updateBalance();
+            showScreen('main');
+        } else {
+            showNotification(result.error || 'Ошибка перевода', 'error');
+        }
     } catch (error) {
-        showNotification(`❌ ${error.message}`, 'error');
+        showNotification(error.message, 'error');
     }
 }
 
-// Загрузка истории игр
+// ====================
+// ЗАГРУЗКА ИСТОРИИ ИГР
+// ====================
+
 async function loadGameHistory() {
     const historyList = document.getElementById('historyList');
-    historyList.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">Загрузка...</div>';
+    if (!historyList) return;
+    
+    historyList.innerHTML = '<div class="loading">Загрузка истории...</div>';
     
     try {
-        const games = await window.supabaseClient.getGameHistory(20);
+        const games = await getGameHistory(10);
         
-        if (games.length === 0) {
-            historyList.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                    🎮 Игр еще не было<br>
-                    <small style="font-size: 14px;">Сыграйте в первую игру!</small>
-                </div>
-            `;
+        if (!games || games.length === 0) {
+            historyList.innerHTML = '<div class="empty-state">История игр пуста</div>';
             return;
         }
         
         let html = '';
         games.forEach(game => {
             const date = new Date(game.created_at).toLocaleDateString('ru-RU');
-            const time = new Date(game.created_at).toLocaleTimeString('ru-RU', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            const isWin = game.win_amount > 0;
-            const result = game.result;
-            
-            let gameIcon = '🎮';
-            let gameName = 'Игра';
-            let details = '';
-            
-            if (game.game_type === 'dice') {
-                gameIcon = '🎲';
-                gameName = 'Кости';
-                if (result && result.dice1 && result.dice2) {
-                    details = `${result.dice1} + ${result.dice2} = ${result.sum}`;
-                }
-            } else if (game.game_type === 'slots') {
-                gameIcon = '🎰';
-                gameName = 'Слоты';
-                if (result && result.symbols) {
-                    details = result.symbols.join(' ');
-                }
-            }
+            const profit = game.win_amount - game.bet_amount;
             
             html += `
                 <div class="history-item">
                     <div class="history-game">
-                        <div class="history-icon">${gameIcon}</div>
+                        <div class="history-icon">${game.game_type === 'dice' ? '🎲' : '🎰'}</div>
                         <div class="history-details">
-                            <h4>${gameName}</h4>
-                            <span>${date} ${time}</span>
-                            ${details ? `<br><small>${details}</small>` : ''}
+                            <h4>${game.game_type === 'dice' ? 'Кости' : 'Слоты'}</h4>
+                            <span>${date}</span>
                         </div>
                     </div>
-                    <div class="history-amount ${isWin ? 'history-win' : 'history-loss'}">
-                        ${isWin ? '+' : ''}${game.win_amount - game.bet_amount}
+                    <div class="history-amount ${profit >= 0 ? 'win' : 'loss'}">
+                        ${profit >= 0 ? '+' : ''}${profit}
                     </div>
                 </div>
             `;
         });
         
         historyList.innerHTML = html;
-        
     } catch (error) {
         console.error('Ошибка загрузки истории:', error);
-        historyList.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                Ошибка загрузки истории
-            </div>
-        `;
+        historyList.innerHTML = '<div class="error">Ошибка загрузки</div>';
     }
 }
 
-// Админ функции
-function showAdminPanel() {
-    showScreen('admin');
-}
+// ====================
+// ЗАПУСК ПРИЛОЖЕНИЯ
+// ====================
 
-async function adminAddCoins() {
-    const userId = document.getElementById('adminUserId').value;
-    const amount = parseInt(document.getElementById('adminAmount').value);
-    
-    if (!userId || !amount) {
-        showNotification('Заполните все поля', 'error');
-        return;
-    }
-    
-    try {
-        await window.supabaseClient.adminAddCoins(parseInt(userId), amount);
-        showNotification(`✅ Добавлено ${amount} монет пользователю ${userId}`, 'success');
-        
-        // Очищаем поля
-        document.getElementById('adminUserId').value = '';
-        document.getElementById('adminAmount').value = '1000';
-        
-    } catch (error) {
-        showNotification(`❌ ${error.message}`, 'error');
-    }
-}
+// Ждем полной загрузки страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM загружен, запускаем приложение...');
+    initApp();
+});
 
-async function adminGetAllUsers() {
-    // Здесь нужно реализовать запрос к API для получения всех пользователей
-    // Можно использовать Supabase Edge Function
-    showNotification('Функция в разработке', 'info');
-}
-
-// Функция для показа уведомлений (из games.js, но доступна глобально)
-window.showNotification = function(message, type = 'info') {
-    const notifications = document.getElementById('notifications') || document.body;
-    
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    notifications.appendChild(notification);
-    
-    // Показываем уведомление
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    // Убираем через 3 секунды
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+// Экспортируем функции для использования в других файлах
+window.app = {
+    showScreen,
+    showNotification,
+    updateBalance,
+    makeTransfer,
+    getCurrentUser: () => currentUser
 };
-
-// Обновление баланса в глобальной области видимости
-window.updateBalance = updateBalance;
-
-// Запуск приложения при загрузке
-document.addEventListener('DOMContentLoaded', initApp);
