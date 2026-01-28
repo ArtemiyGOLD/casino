@@ -1,387 +1,257 @@
 <!doctype html>
 <html lang="ru">
-    <head>
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-        <script>
-            console.log("✅ Все скрипты загружены");
-            console.log("Telegram:", !!window.Telegram?.WebApp);
-            console.log("initTelegramUser:", typeof initTelegramUser);
-            console.log(
-                "window.initTelegramUser:",
-                typeof window.initTelegramUser,
-            );
-        </script>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!-- Для корректного отображения в Telegram -->
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="mobile-web-app-capable" content="yes" />
-
-        <!-- Цвета для мобильных браузеров -->
-        <meta name="theme-color" content="#0f0f23" />
-        <meta
-            name="apple-mobile-web-app-status-bar-style"
-            content="black-translucent"
-        />
-
-        <!-- Иконки -->
-        <link rel="icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-
-        <!-- Название приложения -->
-        <meta name="apple-mobile-web-app-title" content="Coin Games" />
-
-        <!-- Для предотвращения кэширования проблем -->
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-        <title>🎮 Coin Games | Telegram</title>
-        <link rel="stylesheet" href="style.css" />
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    </head>
-    <body>
-        <!-- Уведомления будут добавляться динамически -->
-        <div id="notifications"></div>
-
-        <!-- Все экраны -->
-        <div class="container screen active" id="mainScreen">
-            <!-- Шапка -->
-            <div class="header glass">
-                <div class="user-avatar">
-                    <div class="avatar-placeholder" id="userAvatar">👤</div>
-                </div>
-                <div class="user-name" id="userName">Загрузка...</div>
-                <div class="user-id" id="userId">ID: ---</div>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎮 Казино | Supabase</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Экран авторизации -->
+    <div class="container screen active" id="loginScreen">
+        <div class="login-card glass">
+            <h1>🎰 Казино на Supabase</h1>
+            
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Вход</button>
+                <button class="tab-btn" onclick="switchTab('register')">Регистрация</button>
             </div>
-
-            <!-- Карточка баланса -->
-            <div class="balance-card glass">
-                <div class="balance-label">Ваш баланс</div>
-                <div class="balance-amount">
-                    <span id="balanceAmount">0</span>
-                    <div class="coin-icon">🪙</div>
+            
+            <!-- Форма входа -->
+            <div id="loginForm" class="form-container">
+                <div class="input-group">
+                    <label>Логин:</label>
+                    <input type="text" id="loginUsername" placeholder="Введите логин">
+                </div>
+                <div class="input-group">
+                    <label>Пароль:</label>
+                    <input type="password" id="loginPassword" placeholder="Введите пароль">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Войти</button>
+                
+                <div class="test-credentials">
+                    <p>Тестовые данные:</p>
+                    <p><strong>Админ:</strong> admin / admin123</p>
+                    <p><strong>Игрок:</strong> player / player123</p>
                 </div>
             </div>
+            
+            <!-- Форма регистрации -->
+            <div id="registerForm" class="form-container" style="display: none;">
+                <div class="input-group">
+                    <label>Логин:</label>
+                    <input type="text" id="registerUsername" placeholder="Придумайте логин">
+                </div>
+                <div class="input-group">
+                    <label>Пароль:</label>
+                    <input type="password" id="registerPassword" placeholder="Придумайте пароль (мин. 6 символов)">
+                </div>
+                <div class="input-group">
+                    <label>Повторите пароль:</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="Повторите пароль">
+                </div>
+                <div class="input-group">
+                    <label>Имя:</label>
+                    <input type="text" id="registerName" placeholder="Ваше имя">
+                </div>
+                <button class="btn btn-primary" onclick="register()">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Кнопки действий -->
-            <div class="actions-grid">
-                <button class="btn btn-primary" onclick="showScreen('games')">
-                    <div class="btn-icon">🎮</div>
-                    <div class="btn-text">Игры</div>
-                </button>
+    <!-- Главный экран игрока -->
+    <div class="container screen" id="mainScreen">
+        <!-- Шапка -->
+        <div class="header glass">
+            <div class="user-avatar">
+                <div class="avatar-placeholder" id="userAvatar">👤</div>
+            </div>
+            <div class="user-name" id="userName">Игрок</div>
+            <div class="user-id" id="userId">ID: ---</div>
+        </div>
 
-                <button
-                    class="btn btn-secondary"
-                    onclick="showScreen('transfer')"
-                >
-                    <div class="btn-icon">💸</div>
-                    <div class="btn-text">Перевод</div>
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="showScreen('history')"
-                >
-                    <div class="btn-icon">📊</div>
-                    <div class="btn-text">История</div>
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="showAdminPanel()"
-                    id="adminBtn"
-                    style="display: none"
-                >
-                    <div class="btn-icon">⚙️</div>
-                    <div class="btn-text">Админ</div>
-                </button>
+        <!-- Карточка баланса -->
+        <div class="balance-card glass">
+            <div class="balance-label">Ваш баланс</div>
+            <div class="balance-amount">
+                <span id="balanceAmount">0</span>
+                <div class="coin-icon">🪙</div>
+            </div>
+            <div class="balance-actions">
+                <button class="btn-small" onclick="addTestCoins()">+1000 монет</button>
             </div>
         </div>
 
-        <!-- Экран выбора игр -->
-        <div class="container games-screen" id="gamesScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">🎲 Игра в кости</h2>
-                <div class="dice-game">
-                    <div class="dice-container">
-                        <div class="dice" id="dice">
-                            <div class="dice-face">1</div>
-                            <div class="dice-face">2</div>
-                            <div class="dice-face">3</div>
-                            <div class="dice-face">4</div>
-                            <div class="dice-face">5</div>
-                            <div class="dice-face">6</div>
+        <!-- Кнопки действий -->
+        <div class="actions-grid">
+            <button class="btn btn-primary" onclick="showScreen('games')">
+                <div class="btn-icon">🎮</div>
+                <div class="btn-text">Игры</div>
+            </button>
+
+            <button class="btn btn-secondary" onclick="showScreen('transfer')">
+                <div class="btn-icon">💸</div>
+                <div class="btn-text">Перевод</div>
+            </button>
+
+            <button class="btn btn-secondary" onclick="showScreen('history')">
+                <div class="btn-icon">📊</div>
+                <div class="btn-text">История</div>
+            </button>
+
+            <button class="btn btn-secondary" onclick="showScreen('admin')" id="adminBtn" style="display: none">
+                <div class="btn-icon">⚙️</div>
+                <div class="btn-text">Админ-панель</div>
+            </button>
+            
+            <button class="btn btn-danger" onclick="logout()">
+                <div class="btn-icon">🚪</div>
+                <div class="btn-text">Выйти</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Экран игр (оставляем как было) -->
+    <div class="container screen" id="gamesScreen">
+        <!-- Тут ваши игры -->
+    </div>
+
+    <!-- Админ панель -->
+    <div class="container screen" id="adminScreen">
+        <div class="admin-card glass">
+            <h2 class="game-title">⚙️ Админ-панель</h2>
+            
+            <div class="admin-section">
+                <h3>👥 Управление пользователями</h3>
+                <div class="admin-controls">
+                    <button class="btn btn-primary" onclick="loadAllUsers()">
+                        <div class="btn-icon">🔄</div>
+                        <div class="btn-text">Обновить список</div>
+                    </button>
+                    
+                    <div class="user-list" id="userList">
+                        <div class="loading">Загрузка пользователей...</div>
+                    </div>
+                    
+                    <div class="user-edit" id="userEditForm" style="display: none;">
+                        <h4>Редактирование пользователя</h4>
+                        <div class="input-group">
+                            <label>ID:</label>
+                            <input type="text" id="editUserId" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Логин:</label>
+                            <input type="text" id="editUsername">
+                        </div>
+                        <div class="input-group">
+                            <label>Имя:</label>
+                            <input type="text" id="editName">
+                        </div>
+                        <div class="input-group">
+                            <label>Баланс:</label>
+                            <input type="number" id="editBalance">
+                        </div>
+                        <div class="input-group">
+                            <label>Роль:</label>
+                            <select id="editRole">
+                                <option value="user">Игрок</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="saveUserChanges()">Сохранить</button>
+                            <button class="btn btn-danger" onclick="deleteUser()">Удалить</button>
+                            <button class="btn btn-secondary" onclick="cancelEdit()">Отмена</button>
                         </div>
                     </div>
-                    <div id="diceResult"></div>
-
-                    <div class="bet-controls">
-                        <button class="bet-btn" id="decreaseDiceBet">-</button>
-                        <div class="bet-amount" id="diceBet">100</div>
-                        <button class="bet-btn" id="increaseDiceBet">+</button>
-                    </div>
-
-                    <button class="roll-btn" id="rollDice">
-                        БРОСИТЬ КОСТИ
-                    </button>
                 </div>
             </div>
-
-            <div class="game-card glass">
-                <h2 class="game-title">🎰 Игровые автоматы</h2>
-                <div class="slots-game">
-                    <div class="slots-container">
-                        <div class="slot-reel" id="reel1"></div>
-                        <div class="slot-reel" id="reel2"></div>
-                        <div class="slot-reel" id="reel3"></div>
+            
+            <div class="admin-section">
+                <h3>💰 Быстрое пополнение</h3>
+                <div class="quick-add">
+                    <div class="input-group">
+                        <label>ID пользователя:</label>
+                        <input type="text" id="quickUserId" placeholder="Введите ID пользователя">
                     </div>
-                    <div id="slotsResult"></div>
-
-                    <div class="bet-controls">
-                        <button class="bet-btn" id="decreaseSlotsBet">-</button>
-                        <div class="bet-amount" id="slotsBet">100</div>
-                        <button class="bet-btn" id="increaseSlotsBet">+</button>
+                    <div class="input-group">
+                        <label>Сумма:</label>
+                        <input type="number" id="quickAmount" value="1000">
                     </div>
-
-                    <button class="spin-btn" id="spinSlots">КРУТИТЬ</button>
+                    <button class="btn btn-primary" onclick="adminAddCoins()">Пополнить баланс</button>
                 </div>
             </div>
+            
+            <div class="admin-section">
+                <h3>📊 Статистика</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Всего пользователей</div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Общий баланс</div>
+                        <div class="stat-value" id="totalBalance">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Всего игр</div>
+                        <div class="stat-value" id="totalGames">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Админов</div>
+                        <div class="stat-value" id="totalAdmins">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="showScreen('main')">
+                    <div class="btn-icon">←</div>
+                    <div class="btn-text">Назад в меню</div>
+                </button>
+                <button class="btn btn-primary" onclick="loadAdminData()">
+                    <div class="btn-icon">📊</div>
+                    <div class="btn-text">Обновить статистику</div>
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <button
-                class="btn btn-secondary"
-                onclick="showScreen('main')"
-                style="margin-top: 20px"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
+    <!-- Экран перевода -->
+    <div class="container screen" id="transferScreen">
+        <div class="game-card glass">
+            <h2 class="game-title">💸 Перевод средств</h2>
+            <div style="padding: 20px">
+                <div style="margin-bottom: 20px">
+                    <label style="display: block; margin-bottom: 8px; color: rgba(255, 255, 255, 0.7);">
+                        Логин получателя:
+                    </label>
+                    <input type="text" id="friendUsername" placeholder="Введите логин друга">
+                </div>
+
+                <div style="margin-bottom: 20px">
+                    <label style="display: block; margin-bottom: 8px; color: rgba(255, 255, 255, 0.7);">
+                        Сумма перевода:
+                    </label>
+                    <input type="number" id="transferAmount" value="100" min="10">
+                </div>
+
+                <button class="btn btn-primary" onclick="makeTransfer()" style="width: 100%">
+                    <div class="btn-text">Перевести</div>
+                </button>
+            </div>
         </div>
 
-        <!-- Экран перевода -->
-        <div class="container games-screen" id="transferScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">💸 Перевод средств</h2>
-                <div style="padding: 20px">
-                    <div style="margin-bottom: 20px">
-                        <label
-                            style="
-                                display: block;
-                                margin-bottom: 8px;
-                                color: rgba(255, 255, 255, 0.7);
-                            "
-                        >
-                            Telegram ID друга:
-                        </label>
-                        <input
-                            type="number"
-                            id="friendId"
-                            style="
-                                width: 100%;
-                                padding: 12px;
-                                border-radius: 12px;
-                                background: rgba(255, 255, 255, 0.05);
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                color: white;
-                                font-size: 16px;
-                            "
-                        />
-                    </div>
+        <button class="btn btn-secondary" onclick="showScreen('main')" style="margin-top: 20px">
+            <div class="btn-icon">←</div>
+            <div class="btn-text">Назад</div>
+        </button>
+    </div>
 
-                    <div style="margin-bottom: 20px">
-                        <label
-                            style="
-                                display: block;
-                                margin-bottom: 8px;
-                                color: rgba(255, 255, 255, 0.7);
-                            "
-                        >
-                            Сумма перевода:
-                        </label>
-                        <input
-                            type="number"
-                            id="transferAmount"
-                            value="100"
-                            style="
-                                width: 100%;
-                                padding: 12px;
-                                border-radius: 12px;
-                                background: rgba(255, 255, 255, 0.05);
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                color: white;
-                                font-size: 16px;
-                            "
-                        />
-                    </div>
-
-                    <div style="margin-bottom: 30px">
-                        <label
-                            style="
-                                display: block;
-                                margin-bottom: 8px;
-                                color: rgba(255, 255, 255, 0.7);
-                            "
-                        >
-                            Комментарий (необязательно):
-                        </label>
-                        <input
-                            type="text"
-                            id="transferComment"
-                            placeholder="Перевод другу"
-                            style="
-                                width: 100%;
-                                padding: 12px;
-                                border-radius: 12px;
-                                background: rgba(255, 255, 255, 0.05);
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                color: white;
-                                font-size: 16px;
-                            "
-                        />
-                    </div>
-
-                    <button
-                        class="btn btn-primary"
-                        onclick="makeTransfer()"
-                        style="width: 100%"
-                    >
-                        <div class="btn-text">Перевести</div>
-                    </button>
-                </div>
-            </div>
-
-            <button
-                class="btn btn-secondary"
-                onclick="showScreen('main')"
-                style="margin-top: 20px"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
-        </div>
-
-        <!-- Экран истории -->
-        <div class="container games-screen" id="historyScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">📊 История игр</h2>
-                <div id="historyList" style="min-height: 300px; padding: 10px">
-                    <div
-                        style="
-                            text-align: center;
-                            padding: 40px;
-                            color: rgba(255, 255, 255, 0.5);
-                        "
-                    >
-                        Загрузка истории...
-                    </div>
-                </div>
-            </div>
-
-            <button
-                class="btn btn-secondary"
-                onclick="showScreen('main')"
-                style="margin-top: 20px"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
-        </div>
-
-        <!-- Экран админа -->
-        <div class="container games-screen" id="adminScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">⚙️ Админ-панель</h2>
-                <div style="padding: 20px">
-                    <div style="margin-bottom: 20px">
-                        <label
-                            style="
-                                display: block;
-                                margin-bottom: 8px;
-                                color: rgba(255, 255, 255, 0.7);
-                            "
-                        >
-                            Telegram ID пользователя:
-                        </label>
-                        <input
-                            type="number"
-                            id="adminUserId"
-                            style="
-                                width: 100%;
-                                padding: 12px;
-                                border-radius: 12px;
-                                background: rgba(255, 255, 255, 0.05);
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                color: white;
-                                font-size: 16px;
-                            "
-                        />
-                    </div>
-
-                    <div style="margin-bottom: 20px">
-                        <label
-                            style="
-                                display: block;
-                                margin-bottom: 8px;
-                                color: rgba(255, 255, 255, 0.7);
-                            "
-                        >
-                            Количество монет:
-                        </label>
-                        <input
-                            type="number"
-                            id="adminAmount"
-                            value="1000"
-                            style="
-                                width: 100%;
-                                padding: 12px;
-                                border-radius: 12px;
-                                background: rgba(255, 255, 255, 0.05);
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                color: white;
-                                font-size: 16px;
-                            "
-                        />
-                    </div>
-
-                    <button
-                        class="btn btn-primary"
-                        onclick="adminAddCoins()"
-                        style="width: 100%; margin-bottom: 10px"
-                    >
-                        <div class="btn-text">Добавить монеты</div>
-                    </button>
-
-                    <button
-                        class="btn btn-secondary"
-                        onclick="adminGetAllUsers()"
-                        style="width: 100%"
-                    >
-                        <div class="btn-text">Список пользователей</div>
-                    </button>
-                </div>
-            </div>
-
-            <button
-                class="btn btn-secondary"
-                onclick="showScreen('main')"
-                style="margin-top: 20px"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
-        </div>
-
-        <!-- Подключение скриптов -->
-        <script src="supabase.js"></script>
-        <script src="games.js"></script>
-        <script src="app.js"></script>
-    </body>
+    <!-- Подключение скриптов -->
+    <script src="supabase-auth.js"></script> <!-- НОВЫЙ ФАЙЛ -->
+    <script src="games.js"></script>
+    <script src="app.js"></script>
+</body>
 </html>
