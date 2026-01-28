@@ -65,7 +65,7 @@ window.login = async function() {
     }
     
     try {
-        const user = await window.supabaseAuth.login(username, password);
+        const user = await window.supabaseAuth.loginUser(username, password);
         if (user) {
             showNotification(`Добро пожаловать, ${user.name}! 🎮`, 'success');
             onUserLoaded(user);
