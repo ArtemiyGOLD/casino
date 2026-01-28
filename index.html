@@ -253,5 +253,165 @@
     <script src="supabase-auth.js"></script> <!-- НОВЫЙ ФАЙЛ -->
     <script src="games.js"></script>
     <script src="app.js"></script>
+    <script>
+    // Глобальные функции для админ-панели
+    window.loadAllUsers = async function() {
+        try {
+            const users = await window.supabaseAuth.getAllUsers();
+            const userList = document.getElementById('userList');
+            
+            if (!users || users.length === 0) {
+                userList.innerHTML = '<div class="empty">Пользователи не найдены</div>';
+                return;
+            }
+            
+            let html = '<div class="users-header">';
+            html += '<div class="user-row header">';
+            html += '<div>ID</div><div>Логин</div><div>Имя</div><div>Баланс</div><div>Роль</div><div>Действия</div>';
+            html += '</div>';
+            
+            users.forEach(user => {
+                html += `
+                    <div class="user-row" data-user-id="${user.id}">
+                        <div class="user-id-short">${user.id.substring(0, 8)}...</div>
+                        <div>${user.username}</div>
+                        <div>${user.name || '-'}</div>
+                        <div>${user.balance} 🪙</div>
+                        <div><span class="role-badge ${user.role}">${user.role === 'admin' ? '👑 Админ' : '👤 Игрок'}</span></div>
+                        <div>
+                            <button class="btn-small" onclick="editUser('${user.id}')">✏️</button>
+                            <button class="btn-small btn-danger" onclick="confirmDeleteUser('${user.id}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            userList.innerHTML = html;
+            
+        } catch (error) {
+            showNotification('Ошибка загрузки пользователей: ' + error.message, 'error');
+        }
+    };
+    
+    window.editUser = async function(userId) {
+        try {
+            const users = await window.supabaseAuth.getAllUsers();
+            const user = users.find(u => u.id === userId);
+            
+            if (!user) {
+                showNotification('Пользователь не найден', 'error');
+                return;
+            }
+            
+            // Заполняем форму
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editName').value = user.name || '';
+            document.getElementById('editBalance').value = user.balance;
+            document.getElementById('editRole').value = user.role;
+            
+            // Показываем форму
+            document.getElementById('userEditForm').style.display = 'block';
+            
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    window.saveUserChanges = async function() {
+        const userId = document.getElementById('editUserId').value;
+        const username = document.getElementById('editUsername').value.trim();
+        const name = document.getElementById('editName').value.trim();
+        const balance = parseInt(document.getElementById('editBalance').value);
+        const role = document.getElementById('editRole').value;
+        
+        if (!username) {
+            showNotification('Логин не может быть пустым', 'error');
+            return;
+        }
+        
+        try {
+            await window.supabaseAuth.updateUser(userId, {
+                username,
+                name,
+                balance,
+                role
+            });
+            
+            showNotification('✅ Изменения сохранены', 'success');
+            cancelEdit();
+            loadAllUsers();
+            
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    window.confirmDeleteUser = function(userId) {
+        if (confirm('Вы уверены что хотите удалить этого пользователя? Все его данные будут удалены.')) {
+            deleteUser(userId);
+        }
+    };
+    
+    window.deleteUser = async function() {
+        const userId = document.getElementById('editUserId').value;
+        
+        try {
+            await window.supabaseAuth.deleteUser(userId);
+            showNotification('✅ Пользователь удален', 'success');
+            cancelEdit();
+            loadAllUsers();
+            
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    window.cancelEdit = function() {
+        document.getElementById('userEditForm').style.display = 'none';
+    };
+    
+    window.adminAddCoins = async function() {
+        const userId = document.getElementById('quickUserId').value.trim();
+        const amount = parseInt(document.getElementById('quickAmount').value);
+        
+        if (!userId || !amount || amount <= 0) {
+            showNotification('Заполните все поля корректно', 'error');
+            return;
+        }
+        
+        try {
+            const result = await window.supabaseAuth.addCoins(userId, amount);
+            showNotification(`✅ Добавлено ${amount} монет пользователю ${result.username}`, 'success');
+            document.getElementById('quickUserId').value = '';
+            document.getElementById('quickAmount').value = '1000';
+            
+            // Обновляем список пользователей если он открыт
+            if (window.loadAllUsers) {
+                loadAllUsers();
+            }
+            
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    window.loadAdminData = async function() {
+        try {
+            const stats = await window.supabaseAuth.getStats();
+            
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('totalBalance').textContent = stats.totalBalance;
+            document.getElementById('totalGames').textContent = stats.totalGames;
+            document.getElementById('totalAdmins').textContent = stats.totalAdmins;
+            
+            showNotification('📊 Статистика обновлена', 'success');
+            
+        } catch (error) {
+            showNotification('Ошибка загрузки статистики: ' + error.message, 'error');
+        }
+    };
+</script>
 </body>
 </html>

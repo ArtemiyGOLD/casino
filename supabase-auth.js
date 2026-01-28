@@ -11,36 +11,6 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // Текущий пользователь
 let currentUser = null;
 
-// ==================== СХЕМА БАЗЫ ДАННЫХ ====================
-/*
-users таблица:
-id - uuid (primary key)
-username - text (unique)
-password - text (в реальном приложении нужно хэшировать!)
-name - text
-balance - integer (default: 1000)
-role - text (default: 'user')
-created_at - timestamp
-
-games таблица:
-id - uuid (primary key)
-user_id - uuid (foreign key)
-game_type - text
-bet_amount - integer
-win_amount - integer
-result - jsonb
-created_at - timestamp
-
-transactions таблица:
-id - uuid (primary key)
-from_user_id - uuid
-to_user_id - uuid
-amount - integer
-type - text
-description - text
-created_at - timestamp
-*/
-
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 
 /**
@@ -62,7 +32,7 @@ async function initDatabase() {
             await supabase.from('users').insert([
                 {
                     username: 'admin',
-                    password: 'admin123', // ВНИМАНИЕ: в продакшене хэшируйте пароли!
+                    password: 'admin123',
                     name: 'Администратор',
                     balance: 1000000,
                     role: 'admin'
@@ -125,7 +95,7 @@ async function registerUser(username, password, name) {
                     username,
                     password, // ВНИМАНИЕ: в реальном приложении пароли нужно хэшировать!
                     name: name || username,
-                    balance: 1000, // Стартовый баланс
+                    balance: 1000,
                     role: 'user'
                 }
             ])
@@ -161,7 +131,7 @@ async function loginUser(username, password) {
             throw new Error('Пользователь не найден');
         }
         
-        // Проверяем пароль (в реальном приложении сравниваем хэши)
+        // Проверяем пароль
         if (user.password !== password) {
             throw new Error('Неверный пароль');
         }
@@ -290,27 +260,47 @@ async function transferCoins(fromUserId, toUsername, amount, description = '') {
         if (!fromUser) throw new Error('Отправитель не найден');
         if (fromUser.balance < amount) throw new Error('Недостаточно средств');
         
-        // Обновляем балансы через транзакцию (в одной операции)
-        const { error: updateError } = await supabase.rpc('make_transfer', {
-            p_from_user_id: fromUserId,
-            p_to_user_id: toUser.id,
-            p_amount: amount,
-            p_description: description || `Перевод от ${currentUser?.username || 'пользователя'}`
-        });
+        // Начинаем транзакцию (обновляем два баланса)
+        const newBalanceFrom = fromUser.balance - amount;
+        const newBalanceTo = toUser.balance + amount;
         
-        if (updateError) throw updateError;
+        // Обновляем баланс отправителя
+        const { error: errorFrom } = await supabase
+            .from('users')
+            .update({ balance: newBalanceFrom })
+            .eq('id', fromUserId);
+        
+        if (errorFrom) throw errorFrom;
+        
+        // Обновляем баланс получателя
+        const { error: errorTo } = await supabase
+            .from('users')
+            .update({ balance: newBalanceTo })
+            .eq('id', toUser.id);
+        
+        if (errorTo) throw errorTo;
+        
+        // Записываем транзакцию
+        await supabase.from('transactions').insert([
+            {
+                from_user_id: fromUserId,
+                to_user_id: toUser.id,
+                amount: amount,
+                type: 'transfer',
+                description: description || `Перевод от ${currentUser?.username || 'пользователя'}`
+            }
+        ]);
         
         // Обновляем текущего пользователя
         if (currentUser && currentUser.id === fromUserId) {
-            const newBalance = fromUser.balance - amount;
-            currentUser.balance = newBalance;
+            currentUser.balance = newBalanceFrom;
         }
         
         return {
             success: true,
             toUser: toUser.username,
             amount,
-            newBalance: fromUser.balance - amount
+            newBalance: newBalanceFrom
         };
         
     } catch (error) {
@@ -500,16 +490,18 @@ async function getAdminStats() {
             .from('games')
             .select('id');
         
-        if (!users) users = [];
-        if (!games) games = [];
+        let totalBalance = 0;
+        let totalAdmins = 0;
         
-        const totalBalance = users.reduce((sum, user) => sum + (user.balance || 0), 0);
-        const totalAdmins = users.filter(user => user.role === 'admin').length;
+        if (users) {
+            totalBalance = users.reduce((sum, user) => sum + (user.balance || 0), 0);
+            totalAdmins = users.filter(user => user.role === 'admin').length;
+        }
         
         return {
-            totalUsers: users.length,
+            totalUsers: users ? users.length : 0,
             totalBalance,
-            totalGames: games.length,
+            totalGames: games ? games.length : 0,
             totalAdmins
         };
         

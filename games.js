@@ -50,6 +50,12 @@ class DiceGame {
     }
 
     init() {
+        // Проверяем существование элементов
+        if (!this.betIncrease || !this.betDecrease || !this.rollButton) {
+            console.warn("Элементы игры в кости не найдены");
+            return;
+        }
+
         this.betIncrease.addEventListener("click", () => this.changeBet(1));
         this.betDecrease.addEventListener("click", () => this.changeBet(-1));
         this.rollButton.addEventListener("click", () => this.roll());
