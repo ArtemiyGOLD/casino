@@ -3,13 +3,20 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, sans-serif;
 }
 
 :root {
     --bg-primary: #0f0f23;
     --bg-secondary: #1a1a2e;
-    --bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    --bg-gradient: linear-gradient(
+        135deg,
+        #0f0f23 0%,
+        #1a1a2e 50%,
+        #16213e 100%
+    );
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.12);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.36);
@@ -38,7 +45,9 @@ body {
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-radius: 24px;
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow:
+        var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Контейнер */
@@ -69,7 +78,11 @@ body {
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: linear-gradient(
+        135deg,
+        var(--accent-primary),
+        var(--accent-secondary)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -142,13 +155,17 @@ body {
 }
 
 .btn::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0)
+    );
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -162,7 +179,11 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: linear-gradient(
+        135deg,
+        var(--accent-primary),
+        var(--accent-secondary)
+    );
     color: white;
 }
 
@@ -234,12 +255,24 @@ body {
 }
 
 /* Позиции граней кубика */
-.dice-face:nth-child(1) { transform: translateZ(100px); }
-.dice-face:nth-child(2) { transform: rotateX(180deg) translateZ(100px); }
-.dice-face:nth-child(3) { transform: rotateY(90deg) translateZ(100px); }
-.dice-face:nth-child(4) { transform: rotateY(-90deg) translateZ(100px); }
-.dice-face:nth-child(5) { transform: rotateX(90deg) translateZ(100px); }
-.dice-face:nth-child(6) { transform: rotateX(-90deg) translateZ(100px); }
+.dice-face:nth-child(1) {
+    transform: translateZ(100px);
+}
+.dice-face:nth-child(2) {
+    transform: rotateX(180deg) translateZ(100px);
+}
+.dice-face:nth-child(3) {
+    transform: rotateY(90deg) translateZ(100px);
+}
+.dice-face:nth-child(4) {
+    transform: rotateY(-90deg) translateZ(100px);
+}
+.dice-face:nth-child(5) {
+    transform: rotateX(90deg) translateZ(100px);
+}
+.dice-face:nth-child(6) {
+    transform: rotateX(-90deg) translateZ(100px);
+}
 
 .dice-dot {
     width: 30px;
@@ -414,18 +447,32 @@ body {
 
 /* Анимации */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes rollDice {
-    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
-    100% { transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg); }
+    0% {
+        transform: rotateX(0) rotateY(0) rotateZ(0);
+    }
+    100% {
+        transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg);
+    }
 }
 
 @keyframes spinSlot {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-1000px); }
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-1000px);
+    }
 }
 
 /* Адаптивность */
@@ -433,21 +480,21 @@ body {
     .container {
         padding: 0 10px;
     }
-    
+
     .balance-amount {
         font-size: 36px;
     }
-    
+
     .dice-container {
         width: 150px;
         height: 150px;
     }
-    
+
     .slot-reel {
         width: 80px;
         height: 80px;
     }
-    
+
     .slot-item {
         width: 60px;
         height: 60px;
@@ -485,4 +532,300 @@ body {
 
 .notification.info {
     border-left: 4px solid var(--accent-primary);
+}
+
+/* Стили для экранов */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Экран авторизации */
+.login-card {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    text-align: center;
+}
+
+.login-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    background: rgba(0, 122, 255, 0.2);
+    color: white;
+    font-weight: bold;
+}
+
+.form-container {
+    text-align: left;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #007aff;
+}
+
+.test-credentials {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.test-credentials p {
+    margin: 5px 0;
+}
+
+/* Баланс с кнопками */
+.balance-actions {
+    margin-top: 15px;
+}
+
+.btn-small {
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-small:hover {
+    background: rgba(0, 122, 255, 0.3);
+}
+
+.btn-small.btn-danger {
+    background: rgba(255, 59, 48, 0.2);
+}
+
+.btn-small.btn-danger:hover {
+    background: rgba(255, 59, 48, 0.4);
+}
+
+/* Админ панель */
+.admin-card {
+    padding: 30px;
+}
+
+.admin-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-section:last-child {
+    border-bottom: none;
+}
+
+.admin-section h3 {
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 20px;
+}
+
+.admin-controls {
+    margin-top: 20px;
+}
+
+.user-list {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+}
+
+.users-header {
+    margin-bottom: 10px;
+}
+
+.user-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+}
+
+.user-row.header {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-id-short {
+    font-family: monospace;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.role-badge.admin {
+    background: rgba(255, 149, 0, 0.2);
+    color: #ff9500;
+}
+
+.role-badge.user {
+    background: rgba(0, 122, 255, 0.2);
+    color: #007aff;
+}
+
+.user-edit {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.quick-add {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #34c759;
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    z-index: 1000;
+    transform: translateX(150%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 300px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left: 4px solid #34c759;
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.notification.error {
+    border-left: 4px solid #ff3b30;
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.notification.info {
+    border-left: 4px solid #007aff;
+    background: rgba(0, 122, 255, 0.1);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.empty {
+    text-align: center;
+    padding: 30px;
+    color: rgba(255, 255, 255, 0.5);
 }
