@@ -1,3 +1,7 @@
+// Проверка что функции доступны
+console.log('initTelegramUser доступен?', typeof initTelegramUser);
+console.log('window.initTelegramUser доступен?', typeof window.initTelegramUser);
+
 // ====================
 // ОСНОВНАЯ КОНФИГУРАЦИЯ
 // ====================
