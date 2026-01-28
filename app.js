@@ -16,7 +16,7 @@ async function initApp() {
         tg.MainButton.show();
         
         // Инициализируем пользователя через Supabase
-        const user = await window.supabaseClient.initTelegramUser();
+        const user = await initTelegramUser();
         
         // Обновляем интерфейс
         updateUserInfo(user);
