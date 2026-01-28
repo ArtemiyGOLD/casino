@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Telegram Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <h1>Тест Telegram Mini App</h1>
+    <div id="result"></div>
+    
+    <script>
+        const tg = window.Telegram?.WebApp;
+        const resultDiv = document.getElementById('result');
+        
+        if (!tg) {
+            resultDiv.innerHTML = '❌ Telegram WebApp SDK не загружен';
+        } else {
+            tg.expand();
+            
+            const user = tg.initDataUnsafe?.user;
+            
+            if (user) {
+                resultDiv.innerHTML = `
+                    ✅ Mini App работает!<br>
+                    👤 Пользователь: ${user.first_name} (@${user.username})<br>
+                    🆔 ID: ${user.id}<br>
+                    📱 Платформа: ${tg.platform}
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    ❌ Данных пользователя нет<br>
+                    <strong>Причина:</strong> Вы открыли сайт как обычную ссылку<br>
+                    <strong>Решение:</strong> Настройте Menu Button в @BotFather и нажмите на него
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
