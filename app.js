@@ -1,6 +1,9 @@
 // Проверка что функции доступны
 console.log('initTelegramUser доступен?', typeof initTelegramUser);
 console.log('window.initTelegramUser доступен?', typeof window.initTelegramUser);
+// ВСТАВЬ ПЕРВОЙ СТРОКОЙ В app.js
+console.log("📱 Telegram данные:", window.Telegram?.WebApp?.initDataUnsafe);
+console.log("👤 Пользователь:", window.Telegram?.WebApp?.initDataUnsafe?.user);
 
 // ====================
 // ОСНОВНАЯ КОНФИГУРАЦИЯ
