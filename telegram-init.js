@@ -49,24 +49,47 @@ class TelegramCasino {
 
     // Обработка пользователя Telegram
     async handleTelegramUser() {
+        console.log("🟡 [A] Начало handleTelegramUser");
+
         const tgUser = this.tg.initDataUnsafe?.user;
+        console.log("🟡 [B] Данные из Telegram:", tgUser);
 
         if (!tgUser) {
+            console.error("❌ [C] Нет данных пользователя Telegram");
             this.showError("Не удалось получить данные пользователя");
             return;
         }
 
-        console.log("👤 Данные Telegram:", tgUser);
+        console.log("🟡 [D] tgUser.id =", tgUser.id);
 
-        // Сохраняем/получаем пользователя в Supabase
-        this.user = await this.getOrCreateUser(tgUser);
+        try {
+            // Сохраняем/получаем пользователя в Supabase
+            console.log("🟡 [E] Вызываю getOrCreateUser...");
+            this.user = await this.getOrCreateUser(tgUser);
+            console.log("🟡 [F] Результат getOrCreateUser:", this.user);
 
-        if (this.user) {
-            this.balance = this.user.balance;
-            this.updateUI();
-            this.showNotification(
-                `Добро пожаловать, ${this.user.first_name}! 🎮`,
-                "success",
+            if (this.user) {
+                this.balance = this.user.balance;
+                console.log(
+                    "🟡 [G] Данные пользователя получены. Баланс:",
+                    this.balance,
+                );
+                this.updateUI();
+                this.showNotification(
+                    `Добро пожаловать, ${this.user.first_name}! 🎮`,
+                    "success",
+                );
+            } else {
+                console.error("❌ [H] getOrCreateUser вернул null/undefined");
+            }
+        } catch (error) {
+            console.error("❌ [I] Ошибка в handleTelegramUser:", error);
+            // Выведем детали ошибки для отладки
+            console.error(
+                "Детали ошибки:",
+                error.message,
+                error.details,
+                error.code,
             );
         }
     }
