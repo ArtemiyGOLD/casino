@@ -213,12 +213,28 @@ class TelegramCasino {
             if (userNameElement) {
                 userNameElement.textContent = this.user.first_name || "Игрок";
             }
-            document.getElementById("userAvatar")?.textContent =
-                this.user.first_name?.[0]?.toUpperCase() || "👤";
-            document.getElementById("balanceAmount")?.textContent =
-                this.balance;
-            document.getElementById("userId")?.textContent =
-                `@${this.user.username || "user"}`;
+
+            const userAvatarElement = document.getElementById("userAvatar");
+            if (userAvatarElement) {
+                const firstLetter = this.user.first_name
+                    ? this.user.first_name[0].toUpperCase()
+                    : "👤";
+                userAvatarElement.textContent = firstLetter;
+            }
+
+            const balanceAmountElement =
+                document.getElementById("balanceAmount");
+            if (balanceAmountElement) {
+                balanceAmountElement.textContent = this.balance;
+            }
+
+            const userIdElement = document.getElementById("userId");
+            if (userIdElement) {
+                const username = this.user.username
+                    ? `@${this.user.username}`
+                    : "user";
+                userIdElement.textContent = `@${username}`;
+            }
 
             // Показываем админ-панель если нужно
             const adminBtn = document.getElementById("adminBtn");
