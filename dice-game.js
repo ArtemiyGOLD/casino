@@ -120,7 +120,7 @@ class DiceGame {
         
         // Определяем результат
         const win = diceValue >= 4;
-        const winAmount = win ? this.betAmount * 2 : 0;
+        const winAmount = win ? this.betAmount * 1.5 : 0;
         
         if (win) {
             resultEl.textContent = `🎉 Вы выиграли ${winAmount}! (Выпало: ${diceValue})`;
