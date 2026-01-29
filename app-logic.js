@@ -1,35 +1,103 @@
-// app-logic.js - Логика игр
+// app-logic.js - Логика игр (исправленная версия)
 class CasinoGames {
     constructor() {
+        console.log('🎮 Инициализация игр...');
         this.currentBet = 100;
         this.isPlaying = false;
         this.initGames();
     }
 
     initGames() {
+        console.log('🔄 Настройка кнопок...');
+        
         // Игра в кости
-        document.getElementById('rollDice')?.addEventListener('click', () => this.playDice());
-        document.getElementById('increaseDiceBet')?.addEventListener('click', () => this.changeBet(50));
-        document.getElementById('decreaseDiceBet')?.addEventListener('click', () => this.changeBet(-50));
+        this.setupDiceGame();
         
         // Игра в слоты
-        document.getElementById('spinSlots')?.addEventListener('click', () => this.playSlots());
-        document.getElementById('increaseSlotsBet')?.addEventListener('click', () => this.changeBet(50));
-        document.getElementById('decreaseSlotsBet')?.addEventListener('click', () => this.changeBet(-50));
+        this.setupSlotsGame();
         
-        // Кнопки интерфейса
-        document.getElementById('addCoinsBtn')?.addEventListener('click', () => this.addTestCoins());
-        document.getElementById('transferBtn')?.addEventListener('click', () => telegramCasino.showScreen('transfer'));
-        document.getElementById('historyBtn')?.addEventListener('click', () => this.showHistory());
-        document.getElementById('gamesBtn')?.addEventListener('click', () => telegramCasino.showScreen('games'));
-        document.getElementById('adminBtn')?.addEventListener('click', () => telegramCasino.showScreen('admin'));
+        // Основные кнопки
+        this.setupMainButtons();
         
         this.updateBetDisplay();
+        console.log('✅ Все кнопки настроены');
+    }
+
+    setupDiceGame() {
+        const rollDiceBtn = document.getElementById('rollDice');
+        const increaseDiceBtn = document.getElementById('increaseDiceBet');
+        const decreaseDiceBtn = document.getElementById('decreaseDiceBet');
+        
+        if (rollDiceBtn) {
+            rollDiceBtn.addEventListener('click', () => this.playDice());
+            console.log('✅ Кнопка "Бросить кости" настроена');
+        }
+        
+        if (increaseDiceBtn) {
+            increaseDiceBtn.addEventListener('click', () => this.changeBet(50));
+            console.log('✅ Кнопка "+" для костей настроена');
+        }
+        
+        if (decreaseDiceBtn) {
+            decreaseDiceBtn.addEventListener('click', () => this.changeBet(-50));
+            console.log('✅ Кнопка "-" для костей настроена');
+        }
+    }
+
+    setupSlotsGame() {
+        const spinSlotsBtn = document.getElementById('spinSlots');
+        const increaseSlotsBtn = document.getElementById('increaseSlotsBet');
+        const decreaseSlotsBtn = document.getElementById('decreaseSlotsBet');
+        
+        if (spinSlotsBtn) {
+            spinSlotsBtn.addEventListener('click', () => this.playSlots());
+            console.log('✅ Кнопка "Крутить" для слотов настроена');
+        }
+        
+        if (increaseSlotsBtn) {
+            increaseSlotsBtn.addEventListener('click', () => this.changeBet(50));
+            console.log('✅ Кнопка "+" для слотов настроена');
+        }
+        
+        if (decreaseSlotsBtn) {
+            decreaseSlotsBtn.addEventListener('click', () => this.changeBet(-50));
+            console.log('✅ Кнопка "-" для слотов настроена');
+        }
+    }
+
+    setupMainButtons() {
+        const buttons = {
+            'addCoinsBtn': () => this.addTestCoins(),
+            'transferBtn': () => telegramCasino.showScreen('transfer'),
+            'historyBtn': () => this.showHistory(),
+            'gamesBtn': () => telegramCasino.showScreen('games'),
+            'adminBtn': () => telegramCasino.showScreen('admin')
+        };
+        
+        Object.entries(buttons).forEach(([id, handler]) => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', handler);
+                console.log(`✅ Кнопка ${id} настроена`);
+            } else {
+                console.warn(`⚠️ Кнопка ${id} не найдена`);
+            }
+        });
     }
 
     // Игра в кости
     async playDice() {
-        if (this.isPlaying || !telegramCasino.user) return;
+        console.log('🎲 Запуск игры в кости');
+        
+        if (this.isPlaying) {
+            console.log('⚠️ Игра уже идет');
+            return;
+        }
+        
+        if (!telegramCasino.user) {
+            telegramCasino.showNotification('Сначала авторизуйтесь!', 'error');
+            return;
+        }
         
         if (telegramCasino.balance < this.currentBet) {
             telegramCasino.showNotification('Недостаточно средств!', 'error');
@@ -98,9 +166,19 @@ class CasinoGames {
         }, 2000);
     }
 
-    // Игра в слоты (упрощенная версия)
+    // Игра в слоты
     async playSlots() {
-        if (this.isPlaying || !telegramCasino.user) return;
+        console.log('🎰 Запуск игры в слоты');
+        
+        if (this.isPlaying) {
+            console.log('⚠️ Игра уже идет');
+            return;
+        }
+        
+        if (!telegramCasino.user) {
+            telegramCasino.showNotification('Сначала авторизуйтесь!', 'error');
+            return;
+        }
         
         if (telegramCasino.balance < this.currentBet) {
             telegramCasino.showNotification('Недостаточно средств!', 'error');
@@ -112,9 +190,9 @@ class CasinoGames {
         if (btn) btn.disabled = true;
         
         // Анимация слотов
-        const reels = ['reel1', 'reel2', 'reel3'].map(id => document.getElementById(id));
-        
-        reels.forEach((reel, i) => {
+        const reelIds = ['reel1', 'reel2', 'reel3'];
+        reelIds.forEach((id, index) => {
+            const reel = document.getElementById(id);
             if (reel) {
                 const items = reel.querySelector('.slot-items');
                 if (items) {
@@ -178,15 +256,20 @@ class CasinoGames {
         if (newBet >= 50 && newBet <= 5000) {
             this.currentBet = newBet;
             this.updateBetDisplay();
+            console.log(`💰 Ставка изменена: ${this.currentBet}`);
         }
     }
 
     updateBetDisplay() {
-        document.getElementById('diceBet')?.textContent = this.currentBet;
-        document.getElementById('slotsBet')?.textContent = this.currentBet;
+        const diceBet = document.getElementById('diceBet');
+        const slotsBet = document.getElementById('slotsBet');
+        
+        if (diceBet) diceBet.textContent = this.currentBet;
+        if (slotsBet) slotsBet.textContent = this.currentBet;
     }
 
     async addTestCoins() {
+        console.log('🪙 Добавление тестовых монет');
         const added = await telegramCasino.updateBalance(1000);
         if (added !== null) {
             telegramCasino.showNotification('+1000 тестовых монет 🪙', 'success');
@@ -194,13 +277,17 @@ class CasinoGames {
     }
 
     async showHistory() {
+        console.log('📊 Показ истории игр');
         telegramCasino.showScreen('history');
         const games = await telegramCasino.getGameHistory();
         const list = document.getElementById('historyList');
         
-        if (!list) return;
+        if (!list) {
+            console.error('❌ Элемент historyList не найден');
+            return;
+        }
         
-        if (!games.length) {
+        if (!games || !games.length) {
             list.innerHTML = '<div class="empty">История игр пуста</div>';
             return;
         }
@@ -227,10 +314,13 @@ class CasinoGames {
         });
         
         list.innerHTML = html;
+        console.log(`✅ Показано ${games.length} игр в истории`);
     }
 }
 
 // Инициализация игр
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM загружен, инициализация игр...');
     window.casinoGames = new CasinoGames();
+    console.log('✅ CasinoGames создан и готов');
 });
