@@ -1,6 +1,7 @@
 // telegram-init.js
 const SUPABASE_URL = "https://wtwlmhrosdkbogfjvkvo.supabase.co";
-const SUPABASE_KEY = "sb_secret_dH1eHJf1-nhU_VRoVsk38g_3So-jG8k";
+const SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltb3JldHB0a2t4cGp6ZmlkdG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTYwMjcsImV4cCI6MjA4NTI3MjAyN30.6xsk0DyKVRO2dtN17yCE2BUCW39d2lgv4fx8t0YmKvk";
 
 class TelegramCasino {
     constructor() {
@@ -72,21 +73,77 @@ class TelegramCasino {
 
     // Получаем или создаем пользователя в Supabase
     async getOrCreateUser(tgUser) {
-        try {
-            // При каждом запросе тоже передаем tg_user_id (хотя глобальный заголовок уже работает)
-            const { data: existingUser } = await this.supabase
-                .from("users")
-                .select("*")
-                .eq("tg_user_id", tgUser.id)
-                .single();
+        console.log("🟡 [1] Начало getOrCreateUser. tgUser.id =", tgUser?.id);
 
-            // ... остальная часть метода без изменений
+        try {
+            // 1. Пробуем найти пользователя
+            console.log(
+                "🟡 [2] Пытаюсь найти пользователя с tg_user_id =",
+                tgUser.id,
+            );
+            const { data: existingUser, error: selectError } =
+                await this.supabase
+                    .from("users")
+                    .select("*")
+                    .eq("tg_user_id", tgUser.id)
+                    .single(); // .single() выбросит ошибку, если записей 0 или больше 1
+
+            console.log("🟡 [3] Ответ от Supabase на SELECT:", {
+                existingUser,
+                selectError,
+            });
+
+            if (existingUser) {
+                console.log("✅ [4] Пользователь найден:", existingUser);
+                return existingUser;
+            }
+
+            // 2. Если не нашли — создаем нового (обратите внимание, что .single() выбросит ошибку при отсутствии данных)
+            // Код создания будет выполнен только в блоке catch
+            console.log("🟡 [5] Пользователь не найден, будет создан новый");
         } catch (error) {
-            console.error("❌ Ошибка работы с пользователем:", error);
-            // Выведите ДЕТАЛИ ошибки для отладки
-            console.error("Детали ошибки:", error.message, error.details);
-            this.showNotification("Ошибка подключения к базе", "error");
-            return null;
+            // Сюда попадем, если .single() не нашел запись (ошибка 'PGRST116') или другая ошибка
+            console.log(
+                "🟡 [6] Попадаем в catch. Ошибка от .single():",
+                error.code,
+                error.message,
+            );
+
+            if (error.code === "PGRST116") {
+                // Ошибка "0 rows returned"
+                console.log("🟡 [7] Создаю нового пользователя...");
+                const { data: newUser, error: insertError } =
+                    await this.supabase
+                        .from("users")
+                        .insert([
+                            {
+                                tg_user_id: tgUser.id,
+                                username: tgUser.username,
+                                first_name: tgUser.first_name,
+                                last_name: tgUser.last_name,
+                                balance: 1000,
+                                role: "user",
+                            },
+                        ])
+                        .select()
+                        .single();
+
+                console.log("🟡 [8] Ответ от Supabase на INSERT:", {
+                    newUser,
+                    insertError,
+                });
+
+                if (insertError) throw insertError;
+                console.log("✅ [9] Новый пользователь создан:", newUser);
+                return newUser;
+            } else {
+                // Любая другая ошибка
+                console.error(
+                    "❌ [10] Неожиданная ошибка в getOrCreateUser:",
+                    error,
+                );
+                throw error;
+            }
         }
     }
 
