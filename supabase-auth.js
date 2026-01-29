@@ -2,8 +2,8 @@
 console.log('🔐 Инициализация Supabase...');
 
 // Конфигурация Supabase (твои ключи)
-const SUPABASE_URL = 'https://wtwlmhrosdkbogfjvkvo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ee3s6kfMw3cssALH_y2j7w_tU2fNikh';
+const SUPABASE_URL = 'https://ymoretptkkxpjzfidtoi.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Fa4bU0jX-oDQI0kgJSawqQ_J6U4B9ng';
 
 // Инициализация клиента
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
