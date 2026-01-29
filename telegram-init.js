@@ -5,9 +5,18 @@ const SUPABASE_KEY = "sb_secret_dH1eHJf1-nhU_VRoVsk38g_3So-jG8k";
 class TelegramCasino {
     constructor() {
         this.tg = window.Telegram?.WebApp;
+        // Важно: создаем клиента с глобальными заголовками
         this.supabase = window.supabase.createClient(
             SUPABASE_URL,
             SUPABASE_KEY,
+            {
+                global: {
+                    headers: {
+                        // Этот заголовок будет добавляться ко ВСЕМ запросам к Supabase
+                        tg_user_id: this.tg?.initDataUnsafe?.user?.id || "",
+                    },
+                },
+            },
         );
         this.user = null;
         this.balance = 0;
@@ -19,6 +28,11 @@ class TelegramCasino {
             this.showError("Откройте приложение через Telegram бота");
             return false;
         }
+        console.log("Тест подключения к Supabase...");
+        const { data, error } = await this.supabase
+            .from("users")
+            .select("count");
+        console.log("Результат теста:", data, error);
 
         // Настройка Telegram
         this.tg.expand();
@@ -59,40 +73,18 @@ class TelegramCasino {
     // Получаем или создаем пользователя в Supabase
     async getOrCreateUser(tgUser) {
         try {
-            // Проверяем есть ли пользователь
+            // При каждом запросе тоже передаем tg_user_id (хотя глобальный заголовок уже работает)
             const { data: existingUser } = await this.supabase
                 .from("users")
                 .select("*")
                 .eq("tg_user_id", tgUser.id)
                 .single();
 
-            if (existingUser) {
-                console.log("✅ Пользователь найден в базе");
-                return existingUser;
-            }
-
-            // Создаем нового пользователя
-            const { data: newUser, error } = await this.supabase
-                .from("users")
-                .insert([
-                    {
-                        tg_user_id: tgUser.id,
-                        username: tgUser.username,
-                        first_name: tgUser.first_name,
-                        last_name: tgUser.last_name,
-                        balance: 1000,
-                        role: "user",
-                    },
-                ])
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            console.log("✅ Новый пользователь создан");
-            return newUser;
+            // ... остальная часть метода без изменений
         } catch (error) {
             console.error("❌ Ошибка работы с пользователем:", error);
+            // Выведите ДЕТАЛИ ошибки для отладки
+            console.error("Детали ошибки:", error.message, error.details);
             this.showNotification("Ошибка подключения к базе", "error");
             return null;
         }
