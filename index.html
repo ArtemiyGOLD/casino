@@ -3,210 +3,187 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>🎮 Casino Telegram</title>
+        <title>Казино для друзей</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <!-- Подключаем Supabase JS -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <link rel="stylesheet" href="style.css" />
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     </head>
     <body>
-        <!-- Главный экран -->
-        <div class="container screen active" id="mainScreen">
-            <div class="header glass">
-                <div class="user-avatar">
-                    <div class="avatar-placeholder" id="userAvatar">👤</div>
-                </div>
-                <div class="user-name" id="userName">Загрузка...</div>
-                <div class="user-id" id="userId">@username</div>
-            </div>
-
-            <div class="balance-card glass">
-                <div class="balance-label">Ваш баланс</div>
-                <div class="balance-amount">
-                    <span id="balanceAmount">0</span>
-                    <div class="coin-icon">🪙</div>
-                </div>
-                <button class="btn-small" id="addCoinsBtn">
-                    +1000 тестовых монет
-                </button>
-            </div>
-
-            <div class="actions-grid">
-                <button class="btn btn-primary" id="gamesBtn">
-                    <div class="btn-icon">🎮</div>
-                    <div class="btn-text">Игры</div>
-                </button>
-
-                <button class="btn btn-secondary" id="transferBtn">
-                    <div class="btn-icon">💸</div>
-                    <div class="btn-text">Перевод</div>
-                </button>
-
-                <button class="btn btn-secondary" id="historyBtn">
-                    <div class="btn-icon">📊</div>
-                    <div class="btn-text">История</div>
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    id="adminBtn"
-                    style="display: none"
-                >
-                    <div class="btn-icon">⚙️</div>
-                    <div class="btn-text">Админ-панель</div>
-                </button>
-            </div>
-        </div>
-
-        <!-- Экран игр -->
-        <div class="container screen" id="gamesScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">🎲 Игра в кости</h2>
-
-                <div class="dice-game">
-                    <div class="dice-container">
-                        <div class="dice" id="dice">
-                            <div class="dice-face">?</div>
-                            <div class="dice-face">?</div>
-                            <div class="dice-face">?</div>
-                            <div class="dice-face">?</div>
-                            <div class="dice-face">?</div>
-                            <div class="dice-face">?</div>
-                        </div>
+        <div class="container">
+            <header class="glass-effect">
+                <div class="logo">
+                    <i class="fas fa-dice"></i>
+                    <h1>Казино для друзей</h1>
+                    <div class="connection-status" id="connectionStatus">
+                        <i class="fas fa-wifi"></i>
+                        <span>Подключение...</span>
                     </div>
-
-                    <div id="diceResult"></div>
-
-                    <div class="bet-controls">
-                        <button class="bet-btn" id="decreaseDiceBet">−</button>
-                        <div class="bet-amount" id="diceBet">100</div>
-                        <button class="bet-btn" id="increaseDiceBet">+</button>
+                </div>
+                <div class="user-info" id="userInfo">
+                    <span id="usernameDisplay">Гость</span>
+                    <div class="balance glass-effect">
+                        <i class="fas fa-coins"></i>
+                        <span id="userBalance">0</span>
                     </div>
-
-                    <button class="roll-btn" id="rollDice">
-                        Бросить кости
+                    <button
+                        id="logoutBtn"
+                        class="logout-btn"
+                        onclick="logout()"
+                        style="display: none"
+                    >
+                        <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <div class="game-card glass" style="margin-top: 20px">
-                <h2 class="game-title">🎰 Игровые автоматы</h2>
-
-                <div class="slots-game">
-                    <div class="slots-container">
-                        <div class="slot-reel" id="reel1">
-                            <div class="slot-items">
-                                <div class="slot-item">🍒</div>
-                                <div class="slot-item">🍋</div>
-                                <div class="slot-item">🍊</div>
-                                <div class="slot-item">🍇</div>
-                                <div class="slot-item">🔔</div>
+            <main>
+                <section class="games-section">
+                    <h2><i class="fas fa-gamepad"></i> Игры</h2>
+                    <div class="games-container">
+                        <div
+                            class="game-card glass-effect"
+                            onclick="openDiceGame()"
+                        >
+                            <div class="game-icon">
+                                <i class="fas fa-dice-six"></i>
+                            </div>
+                            <h3>Бросок кубика</h3>
+                            <p>Ставка от 10 до 1000. Выигрыш 2x при 4-6.</p>
+                            <div class="game-stats">
+                                <span
+                                    ><i class="fas fa-chart-line"></i> Шанс
+                                    выигрыша: 50%</span
+                                >
                             </div>
                         </div>
-                        <div class="slot-reel" id="reel2">
-                            <div class="slot-items">
-                                <div class="slot-item">🍒</div>
-                                <div class="slot-item">🍋</div>
-                                <div class="slot-item">🍊</div>
-                                <div class="slot-item">🍇</div>
-                                <div class="slot-item">🔔</div>
+
+                        <div
+                            class="game-card glass-effect"
+                            onclick="openSlotsGame()"
+                        >
+                            <div class="game-icon">
+                                <i class="fas fa-sliders-h"></i>
                             </div>
-                        </div>
-                        <div class="slot-reel" id="reel3">
-                            <div class="slot-items">
-                                <div class="slot-item">🍒</div>
-                                <div class="slot-item">🍋</div>
-                                <div class="slot-item">🍊</div>
-                                <div class="slot-item">🍇</div>
-                                <div class="slot-item">🔔</div>
+                            <h3>Слот-машина</h3>
+                            <p>3 барабана, шанс джекпота 5%</p>
+                            <div class="game-stats">
+                                <span
+                                    ><i class="fas fa-chart-line"></i> RTP:
+                                    95%</span
+                                >
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <div id="slotsResult"></div>
-
-                    <div class="bet-controls">
-                        <button class="bet-btn" id="decreaseSlotsBet">−</button>
-                        <div class="bet-amount" id="slotsBet">100</div>
-                        <button class="bet-btn" id="increaseSlotsBet">+</button>
+                <aside>
+                    <div class="panel glass-effect auth-panel" id="authPanel">
+                        <h3><i class="fas fa-user"></i> Авторизация</h3>
+                        <div class="auth-form">
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Имя пользователя"
+                                class="glass-effect"
+                            />
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Пароль"
+                                class="glass-effect"
+                            />
+                            <div class="auth-buttons">
+                                <button
+                                    id="loginBtn"
+                                    class="glass-effect"
+                                    onclick="login()"
+                                >
+                                    Войти
+                                </button>
+                                <button
+                                    id="registerBtn"
+                                    class="glass-effect"
+                                    onclick="register()"
+                                >
+                                    Регистрация
+                                </button>
+                            </div>
+                            <div id="authMessage" class="message"></div>
+                        </div>
                     </div>
 
-                    <button class="spin-btn" id="spinSlots">Крутить</button>
-                </div>
-            </div>
+                    <div
+                        class="panel glass-effect stats-panel"
+                        id="statsPanel"
+                        style="display: none"
+                    >
+                        <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
+                        <div class="stats-content">
+                            <div class="stat-item">
+                                <span>Всего игр:</span>
+                                <span id="totalGames">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Выиграно:</span>
+                                <span id="gamesWon">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Процент побед:</span>
+                                <span id="winRate">0%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Баланс:</span>
+                                <span id="currentBalance">0</span>
+                            </div>
+                        </div>
+                        <button
+                            class="history-btn glass-effect"
+                            onclick="openGameHistory()"
+                        >
+                            <i class="fas fa-history"></i> История игр
+                        </button>
+                    </div>
 
-            <button
-                class="btn btn-secondary"
-                onclick="telegramCasino.showScreen('main')"
-                style="margin-top: 20px; width: 100%"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад в меню</div>
-            </button>
+                    <div
+                        class="panel glass-effect admin-panel"
+                        id="adminPanel"
+                        style="display: none"
+                    >
+                        <h3><i class="fas fa-user-shield"></i> Админ-панель</h3>
+                        <button
+                            class="admin-btn glass-effect"
+                            onclick="openAdminPanel()"
+                        >
+                            <i class="fas fa-users-cog"></i> Управление
+                            пользователями
+                        </button>
+                        <button
+                            class="admin-btn glass-effect"
+                            onclick="openGameHistoryAdmin()"
+                            style="margin-top: 10px"
+                        >
+                            <i class="fas fa-database"></i> Вся история игр
+                        </button>
+                    </div>
+                </aside>
+            </main>
+
+            <div id="modalsContainer"></div>
         </div>
 
-        <!-- Экран истории -->
-        <div class="container screen" id="historyScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">📊 История игр</h2>
-                <div id="historyList">
-                    <div class="loading">Загрузка истории...</div>
-                </div>
-            </div>
+        <!-- Сначала подключаем библиотеку Supabase -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-            <button
-                class="btn btn-secondary"
-                onclick="telegramCasino.showScreen('main')"
-                style="margin-top: 20px; width: 100%"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
-        </div>
-
-        <!-- Экран перевода (можно добавить позже) -->
-        <div class="container screen" id="transferScreen">
-            <div class="game-card glass">
-                <h2 class="game-title">💸 Перевод средств</h2>
-                <div style="padding: 20px; text-align: center">
-                    <p>Функция перевода в разработке 🚧</p>
-                    <p style="opacity: 0.7; margin-top: 10px">
-                        Скоро можно будет переводить монеты друзьям!
-                    </p>
-                </div>
-            </div>
-
-            <button
-                class="btn btn-secondary"
-                onclick="telegramCasino.showScreen('main')"
-                style="margin-top: 20px; width: 100%"
-            >
-                <div class="btn-icon">←</div>
-                <div class="btn-text">Назад</div>
-            </button>
-        </div>
-
-        <!-- В конце body оставьте только это: -->
-        <script src="telegram-init.js"></script>
-        <script src="app-logic.js"></script>
-
-        <style>
-            @keyframes rollDice {
-                0% {
-                    transform: rotateX(0) rotateY(0) rotateZ(0);
-                }
-                25% {
-                    transform: rotateX(180deg) rotateY(90deg) rotateZ(45deg);
-                }
-                50% {
-                    transform: rotateX(360deg) rotateY(180deg) rotateZ(90deg);
-                }
-                75% {
-                    transform: rotateX(540deg) rotateY(270deg) rotateZ(135deg);
-                }
-                100% {
-                    transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg);
-                }
-            }
-        </style>
+        <!-- Затем наши скрипты В ПРАВИЛЬНОМ ПОРЯДКЕ -->
+        <script src="supabase-config.js"></script>
+        <script src="auth.js"></script>
+        <script src="dice-game.js"></script>
+        <script src="slots-game.js"></script>
+        <script src="admin.js"></script>
+        <script src="script.js"></script>
     </body>
 </html>
