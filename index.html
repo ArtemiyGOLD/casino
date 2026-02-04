@@ -1,189 +1,22 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Казино для друзей</title>
+        <title>SOPRANO</title>
+        <link rel="stylesheet" href="./css/index.css" />
         <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap"
             rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
-        <!-- Подключаем Supabase JS -->
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-        <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <div class="container">
-            <header class="glass-effect">
-                <div class="logo">
-                    <i class="fas fa-dice"></i>
-                    <h1>FirstBet</h1>
-                    <div class="connection-status" id="connectionStatus">
-                        <i class="fas fa-wifi"></i>
-                        <span>Подключение...</span>
-                    </div>
-                </div>
-                <div class="user-info" id="userInfo">
-                    <span id="usernameDisplay">Гость</span>
-                    <div class="balance glass-effect">
-                        <i class="fas fa-coins"></i>
-                        <span id="userBalance">0</span>
-                    </div>
-                    <button
-                        id="logoutBtn"
-                        class="logout-btn"
-                        onclick="logout()"
-                        style="display: none"
-                    >
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </header>
-
-            <main>
-                <section class="games-section">
-                    <h2><i class="fas fa-gamepad"></i> Игры</h2>
-                    <div class="games-container">
-                        <div
-                            class="game-card glass-effect"
-                            onclick="openDiceGame()"
-                        >
-                            <div class="game-icon">
-                                <i class="fas fa-dice-six"></i>
-                            </div>
-                            <h3>Бросок кубика</h3>
-                            <p>Ставка от 10 до 1000. Выигрыш 1.5x при 4-6.</p>
-                            <div class="game-stats">
-                                <span
-                                    ><i class="fas fa-chart-line"></i> Шанс
-                                    выигрыша: 50%</span
-                                >
-                            </div>
-                        </div>
-
-                        <div
-                            class="game-card glass-effect"
-                            onclick="openSlotsGame()"
-                        >
-                            <div class="game-icon">
-                                <i class="fas fa-sliders-h"></i>
-                            </div>
-                            <h3>Слот-машина</h3>
-                            <p>3 барабана, шанс джекпота 5%</p>
-                            <div class="game-stats">
-                                <span
-                                    ><i class="fas fa-chart-line"></i> RTP:
-                                    95%</span
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <aside>
-                    <div class="panel glass-effect auth-panel" id="authPanel">
-                        <h3><i class="fas fa-user"></i> Авторизация</h3>
-                        <div class="auth-form">
-                            <input
-                                type="text"
-                                id="username"
-                                placeholder="Имя пользователя"
-                                class="glass-effect"
-                            />
-                            <input
-                                type="password"
-                                id="password"
-                                placeholder="Пароль"
-                                class="glass-effect"
-                            />
-                            <div class="auth-buttons">
-                                <button
-                                    id="loginBtn"
-                                    class="glass-effect"
-                                    onclick="login()"
-                                >
-                                    Войти
-                                </button>
-                                <button
-                                    id="registerBtn"
-                                    class="glass-effect"
-                                    onclick="register()"
-                                >
-                                    Регистрация
-                                </button>
-                            </div>
-                            <div id="authMessage" class="message"></div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="panel glass-effect stats-panel"
-                        id="statsPanel"
-                        style="display: none"
-                    >
-                        <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
-                        <div class="stats-content">
-                            <div class="stat-item">
-                                <span>Всего игр:</span>
-                                <span id="totalGames">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Выиграно:</span>
-                                <span id="gamesWon">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Процент побед:</span>
-                                <span id="winRate">0%</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Баланс:</span>
-                                <span id="currentBalance">0</span>
-                            </div>
-                        </div>
-                        <button
-                            class="history-btn glass-effect"
-                            onclick="openGameHistory()"
-                        >
-                            <i class="fas fa-history"></i> История игр
-                        </button>
-                    </div>
-
-                    <div
-                        class="panel glass-effect admin-panel"
-                        id="adminPanel"
-                        style="display: none"
-                    >
-                        <h3><i class="fas fa-user-shield"></i> Админ-панель</h3>
-                        <button
-                            class="admin-btn glass-effect"
-                            onclick="openAdminPanel()"
-                        >
-                            <i class="fas fa-users-cog"></i> Управление
-                            пользователями
-                        </button>
-                        <button
-                            class="admin-btn glass-effect"
-                            onclick="openGameHistoryAdmin()"
-                            style="margin-top: 10px"
-                        >
-                            <i class="fas fa-database"></i> Вся история игр
-                        </button>
-                    </div>
-                </aside>
-            </main>
-
-            <div id="modalsContainer"></div>
+        <h1>Casino <br> Soprano</h1>
+        
+        <div class="loading-container">
+            <div class="loading-circle"></div>
+            <div class="loading-text">Loading...</div>
         </div>
-
-        <!-- Сначала подключаем библиотеку Supabase -->
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-        <!-- Затем наши скрипты В ПРАВИЛЬНОМ ПОРЯДКЕ -->
-        <script src="supabase-config.js"></script>
-        <script src="auth.js"></script>
-        <script src="dice-game.js"></script>
-        <script src="slots-game.js"></script>
-        <script src="admin.js"></script>
-        <script src="script.js"></script>
+        <script src="./js/loader.js"></script>
     </body>
 </html>
